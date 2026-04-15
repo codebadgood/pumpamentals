@@ -23,6 +23,7 @@ def initialize_db(conn: sqlite3.Connection) -> None:
             event_date TEXT NOT NULL,
             ticker TEXT NOT NULL,
             company_name TEXT,
+            country TEXT,
             industry TEXT,
             market_cap REAL,
             rsi REAL,
@@ -40,6 +41,9 @@ def initialize_db(conn: sqlite3.Connection) -> None:
         )
         """
     )
+    columns = {row[1] for row in conn.execute("PRAGMA table_info(pump_events)").fetchall()}
+    if "country" not in columns:
+        conn.execute("ALTER TABLE pump_events ADD COLUMN country TEXT")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_pump_date ON pump_events(event_date DESC)")
     conn.execute("CREATE INDEX IF NOT EXISTS idx_pump_ticker ON pump_events(ticker)")
 
@@ -94,6 +98,7 @@ def upsert_pump_events(conn: sqlite3.Connection, rows: list[dict]) -> dict[str, 
                 event_date,
                 ticker,
                 company_name,
+                country,
                 industry,
                 market_cap,
                 rsi,
@@ -113,6 +118,7 @@ def upsert_pump_events(conn: sqlite3.Connection, rows: list[dict]) -> dict[str, 
                 :event_date,
                 :ticker,
                 :company_name,
+                :country,
                 :industry,
                 :market_cap,
                 :rsi,
@@ -131,6 +137,7 @@ def upsert_pump_events(conn: sqlite3.Connection, rows: list[dict]) -> dict[str, 
                 event_date=excluded.event_date,
                 ticker=excluded.ticker,
                 company_name=excluded.company_name,
+                country=excluded.country,
                 industry=excluded.industry,
                 market_cap=excluded.market_cap,
                 rsi=excluded.rsi,
@@ -162,6 +169,7 @@ def load_pump_events(conn: sqlite3.Connection) -> pd.DataFrame:
             event_date,
             ticker,
             company_name,
+            country,
             industry,
             market_cap,
             rsi,

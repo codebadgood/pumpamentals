@@ -20,6 +20,7 @@ OTHER_LISTED_URL = "https://www.nasdaqtrader.com/dynamic/SymDir/otherlisted.txt"
 class SymbolMetadata:
     ticker: str
     company_name: str | None
+    country: str | None
     industry: str | None
     shares_outstanding: float | None
     float_shares: float | None
@@ -207,6 +208,7 @@ def fetch_symbol_metadata(symbol: str) -> SymbolMetadata:
         earnings_dates = []
 
     company_name = info.get("longName") or info.get("shortName")
+    country = info.get("country")
     industry = info.get("industryDisp") or info.get("industry")
     shares_outstanding = _to_float(info.get("sharesOutstanding"))
     float_shares = _to_float(info.get("floatShares"))
@@ -216,6 +218,7 @@ def fetch_symbol_metadata(symbol: str) -> SymbolMetadata:
     return SymbolMetadata(
         ticker=symbol,
         company_name=company_name,
+        country=country,
         industry=industry,
         shares_outstanding=shares_outstanding,
         float_shares=float_shares,

@@ -41,11 +41,15 @@ def _style_pump_table(df: pd.DataFrame) -> pd.DataFrame:
     for col in ["market_cap", "shares_outstanding", "float_shares"]:
         if col in formatted.columns:
             formatted[col] = formatted[col].map(_format_large_number)
-    for col in ["rsi", "macd", "rvol", "beta", "one_day_change_pct"]:
+    for col in ["rsi", "macd", "rvol", "beta"]:
         if col in formatted.columns:
             formatted[col] = formatted[col].map(
                 lambda x: "-" if pd.isna(x) else f"{float(x):.2f}"
             )
+    if "one_day_change_pct" in formatted.columns:
+        formatted["one_day_change_pct"] = formatted["one_day_change_pct"].map(
+            lambda x: "-" if pd.isna(x) else f"{float(x):.2f}%"
+        )
     return formatted
 
 
@@ -155,6 +159,10 @@ def main() -> None:
                 value=max(date.today() - timedelta(days=int(lookback_days)), date(2000, 1, 1)),
             )
             filtered = pump_df[pd.to_datetime(pump_df["event_date"]).dt.date >= event_filter_start]
+            if "session_type" in filtered.columns:
+                filtered = filtered.rename(columns={"session_type": "move_occurred"})
+            if "one_day_change_pct" in filtered.columns:
+                filtered = filtered.rename(columns={"one_day_change_pct": "percent_move"})
             st.dataframe(
                 _style_pump_table(filtered),
                 use_container_width=True,

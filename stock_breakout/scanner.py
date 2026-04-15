@@ -207,7 +207,7 @@ def detect_pump_events(
         reference_price = None
 
         if overnight_change >= gain_threshold:
-            session_type = "overnight / pre-market"
+            session_type = "pre market / overnight"
             move_pct = overnight_change
             reference_price = current_open
         elif intraday_change >= gain_threshold:
@@ -215,7 +215,7 @@ def detect_pump_events(
             move_pct = intraday_change
             reference_price = current_high
         elif close_to_close_change >= gain_threshold:
-            session_type = "after market / close-to-close"
+            session_type = "after hours"
             move_pct = close_to_close_change
             reference_price = current_close
 
@@ -239,6 +239,7 @@ def detect_pump_events(
                 "float_shares": None,
                 "days_since_last_earnings": None,
                 "days_before_next_earnings": None,
+                "country": None,
                 "session_type": session_type,
                 "one_day_change_pct": move_pct * 100.0,
                 "reference_price": reference_price,
@@ -341,6 +342,7 @@ def enrich_event_with_metadata(event: dict, metadata: SymbolMetadata | None) -> 
 
     row["company_name"] = metadata.company_name
     row["industry"] = metadata.industry
+    row["country"] = metadata.country
     row["beta"] = metadata.beta_current
     row["shares_outstanding"] = metadata.shares_outstanding
     row["float_shares"] = metadata.float_shares
