@@ -23,7 +23,6 @@ def initialize_db(conn: sqlite3.Connection) -> None:
             event_date TEXT NOT NULL,
             ticker TEXT NOT NULL,
             company_name TEXT,
-            country TEXT,
             industry TEXT,
             market_cap REAL,
             rsi REAL,

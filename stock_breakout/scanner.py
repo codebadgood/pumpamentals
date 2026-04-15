@@ -207,7 +207,7 @@ def detect_pump_events(
         reference_price = None
 
         if overnight_change >= gain_threshold:
-            session_type = "pre market / overnight"
+            session_type = "overnight / pre-market"
             move_pct = overnight_change
             reference_price = current_open
         elif intraday_change >= gain_threshold:
