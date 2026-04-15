@@ -151,6 +151,17 @@ def iter_daily_history_chunks(
 
 
 def _standardize_history(df: pd.DataFrame) -> pd.DataFrame:
+    if isinstance(df.columns, pd.MultiIndex):
+        level0 = set(df.columns.get_level_values(0))
+        level1 = set(df.columns.get_level_values(1))
+        expected = {"Open", "High", "Low", "Close", "Volume"}
+        if expected.issubset(level0):
+            df = df.copy()
+            df.columns = df.columns.get_level_values(0)
+        elif expected.issubset(level1) and len(level0) == 1:
+            only_symbol = next(iter(level0))
+            df = df.xs(only_symbol, axis=1, level=0, drop_level=True).copy()
+
     expected = ["Open", "High", "Low", "Close", "Volume"]
     missing = [col for col in expected if col not in df.columns]
     if missing:
