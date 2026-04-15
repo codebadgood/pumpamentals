@@ -79,12 +79,17 @@ def replace_watchlist(conn: sqlite3.Connection, rows: list[dict]) -> None:
     conn.commit()
 
 
-def upsert_pump_events(conn: sqlite3.Connection, rows: list[dict]) -> int:
+def upsert_pump_events(conn: sqlite3.Connection, rows: list[dict]) -> dict[str, int]:
     inserted = 0
+    updated = 0
     for row in rows:
-        cur = conn.execute(
+        existing = conn.execute(
+            "SELECT 1 FROM pump_events WHERE event_id = ? LIMIT 1",
+            (row["event_id"],),
+        ).fetchone()
+        conn.execute(
             """
-            INSERT OR IGNORE INTO pump_events (
+            INSERT INTO pump_events (
                 event_id,
                 event_date,
                 ticker,
@@ -122,12 +127,33 @@ def upsert_pump_events(conn: sqlite3.Connection, rows: list[dict]) -> int:
                 :one_day_change_pct,
                 :source_note
             )
+            ON CONFLICT(event_id) DO UPDATE SET
+                event_date=excluded.event_date,
+                ticker=excluded.ticker,
+                company_name=excluded.company_name,
+                industry=excluded.industry,
+                market_cap=excluded.market_cap,
+                rsi=excluded.rsi,
+                macd=excluded.macd,
+                rvol=excluded.rvol,
+                beta=excluded.beta,
+                shares_outstanding=excluded.shares_outstanding,
+                float_shares=excluded.float_shares,
+                days_since_last_earnings=excluded.days_since_last_earnings,
+                days_before_next_earnings=excluded.days_before_next_earnings,
+                session_type=excluded.session_type,
+                one_day_change_pct=excluded.one_day_change_pct,
+                source_note=excluded.source_note,
+                created_at=CURRENT_TIMESTAMP
             """,
             row,
         )
-        inserted += cur.rowcount
+        if existing:
+            updated += 1
+        else:
+            inserted += 1
     conn.commit()
-    return inserted
+    return {"inserted": inserted, "updated": updated}
 
 
 def load_pump_events(conn: sqlite3.Connection) -> pd.DataFrame:

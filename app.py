@@ -129,7 +129,8 @@ def main() -> None:
             progress_bar.progress(100)
             st.success(
                 "Scan complete: "
-                f"{result['events_inserted']} new pump events added "
+                f"{result['events_inserted']} new pump events added, "
+                f"{result['events_updated']} refreshed from real historical data "
                 f"({result['raw_events_detected']} detected this run), "
                 f"{result['watchlist_count']} watchlist rows."
             )
@@ -187,7 +188,7 @@ def main() -> None:
             - Market cap at pump is approximated as `reference_price * shares_outstanding` when available.
 
             **Automatic daily appending**
-            - Re-running the scanner adds only unseen `ticker+date+session` events due to primary-key dedupe.
+            - Re-running the scanner adds unseen `ticker+date+session` events and refreshes any existing rows with the latest real historical data.
             """
         )
     conn.close()

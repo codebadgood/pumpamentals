@@ -115,7 +115,7 @@ def run_scan(
         enrich_event_with_metadata(event, metadata_by_symbol.get(event["ticker"]))
         for event in raw_events
     ]
-    inserted_events = upsert_pump_events(conn, final_events)
+    upsert_counts = upsert_pump_events(conn, final_events)
 
     final_watchlist = [
         enrich_watchlist_row(row, metadata_by_symbol.get(row["ticker"]))
@@ -127,7 +127,8 @@ def run_scan(
         "symbols_in_universe": len(symbols),
         "symbols_with_history": len(history_by_symbol),
         "raw_events_detected": len(raw_events),
-        "events_inserted": inserted_events,
+        "events_inserted": upsert_counts["inserted"],
+        "events_updated": upsert_counts["updated"],
         "watchlist_count": len(final_watchlist),
         "scan_start_date": scan_start_date.isoformat(),
     }
